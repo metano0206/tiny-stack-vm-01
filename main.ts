@@ -128,16 +128,20 @@ function run(P, I) {
   }
 }
 
-const ids = readdirSync("/input", { withFileTypes: true })
+// The harness mounts the set at /input and /output and also names
+// the mounts in the environment; both grading runs get the same.
+const IN = process.env.MAKEFUN_INPUT_DIR ?? "/input";
+const OUT = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+const ids = readdirSync(IN, { withFileTypes: true })
   .filter((d) => d.isDirectory()).map((d) => d.name).sort();
 for (const id of ids) {
   // A set always ships both files; the guards keep one unreadable
   // instance from taking the other 39 answers down with it.
   let P, I;
-  try { P = readFileSync(`/input/${id}/program.bin`); } catch { continue; }
-  try { I = readFileSync(`/input/${id}/input.bin`); } catch { I = Buffer.alloc(0); }
+  try { P = readFileSync(`${IN}/${id}/program.bin`); } catch { continue; }
+  try { I = readFileSync(`${IN}/${id}/input.bin`); } catch { I = Buffer.alloc(0); }
   const [out, code] = run(P, I);
-  mkdirSync(`/output/${id}`, { recursive: true });
-  writeFileSync(`/output/${id}/stdout.bin`, out);
-  writeFileSync(`/output/${id}/exit.txt`, String(code));
+  mkdirSync(`${OUT}/${id}`, { recursive: true });
+  writeFileSync(`${OUT}/${id}/stdout.bin`, out);
+  writeFileSync(`${OUT}/${id}/exit.txt`, String(code));
 }
